@@ -126,13 +126,16 @@ impl ObjArch for ObjArchMips {
                 }
 
                 match op {
-                    ValuedOperand::core_immediate(_imm) => {
+                    ValuedOperand::core_immediate(imm) => {
                         if let Some(reloc) = reloc {
                             push_reloc(&mut args, reloc)?;
                         } else {
-                            args.push(ObjInsArg::Arg(ObjInsArgValue::Opaque(
-                                op.display(&instruction, None, &display_flags).to_string().into(),
-                            )));
+                            args.push(ObjInsArg::Arg(
+                                match imm {
+                                    rabbitizer::IU16::Integer(s) => ObjInsArgValue::Signed(s as i64),
+                                    rabbitizer::IU16::Unsigned(u) => ObjInsArgValue::Unsigned(u as u64),
+                                }
+                            ));
                         }
                     }
                     ValuedOperand::core_label(..)
@@ -159,17 +162,12 @@ impl ObjArch for ObjArchMips {
                         if let Some(reloc) = reloc {
                             push_reloc(&mut args, reloc)?;
                         } else {
-                            let temp = match imm {
-                                rabbitizer::IU16::Integer(s) => if s < 0 {
-                                    format!("-0x{:X}", -(s as i32))
-                                } else {
-                                    format!("0x{:X}", s)
-                                },
-                                rabbitizer::IU16::Unsigned(u) => format!("0x{:X}", u),
-                            };
-                            args.push(ObjInsArg::Arg(ObjInsArgValue::Opaque(
-                                temp.into(),
-                            )));
+                            args.push(ObjInsArg::Arg(
+                                match imm {
+                                    rabbitizer::IU16::Integer(s) => ObjInsArgValue::Signed(s as i64),
+                                    rabbitizer::IU16::Unsigned(u) => ObjInsArgValue::Unsigned(u as u64),
+                                }
+                            ));
                         }
                         args.push(ObjInsArg::PlainText("(".into()));
                         args.push(ObjInsArg::Arg(ObjInsArgValue::Opaque(
@@ -177,7 +175,7 @@ impl ObjArch for ObjArchMips {
                         )));
                         args.push(ObjInsArg::PlainText(")".into()));
                     }
-                    // ValuedOperand::r5900_immediate15 => match reloc {
+                    // ValuedOperand::r5900_immediate15(..) => match reloc {
                     //     Some(reloc)
                     //         if reloc.flags == RelocationFlags::Elf { r_type: R_MIPS15_S3 } =>
                     //     {
