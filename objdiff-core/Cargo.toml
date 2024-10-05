@@ -64,7 +64,7 @@ cwextab = { version = "1.0.2", optional = true }
 ppc750cl = { version = "0.3", optional = true }
 
 # mips
-rabbitizer = { version = "1.12", optional = true }
+rabbitizer = { git = "https://github.com/Decompollaborate/rabbitizer.git", branch = "🦀", optional = true }
 
 # x86
 cpp_demangle = { version = "0.4", optional = true }
